@@ -1,0 +1,8 @@
+body { margin: 0; }
+main {
+    display: none;
+}
+#form_players {
+    display: flex;
+    flex-direction: column;
+}
