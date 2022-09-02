@@ -85,16 +85,17 @@ let scoreHeader = document.getElementById("score_header");
     document.getElementsByTagName("main")[0].style.display = "inherit";
     document.getElementById("course_title").innerText = course.name;
     if(!(await showPlayerForm().then((d) => {
+        if(d.length == 0) return true;
         players = d.map((p)=>{
             return {
                 name: p,
                 holes: Array.from({length: course.court.length}, ()=>0)
             }
         })
-        return true
+        return true;
     }).catch((e)=>{
         error(e)
-        return false
+        return false;
     })))
     {
         return;
@@ -151,6 +152,35 @@ const showPlayerForm = () => {
                 pp.setAttribute("placeholder", `Spelare ${i+1} namn`)
                 ps.appendChild(pp)
             }
+        })
+        document.getElementById("load_previous").addEventListener("click",()=>{
+            try{
+                let p = window.localStorage.getItem("players");
+                if (p == null || p == "")
+                {
+                    throw "balls"
+                }
+                players = JSON.parse(p);
+                let c = window.localStorage.getItem("course");
+                if (c == null || c == "")
+                {
+                    throw "balls"
+                }
+                course = JSON.parse(c);
+                let ch = window.localStorage.getItem("currentHole");
+                if (ch == null || ch == "")
+                {
+                    throw "balls"
+                }
+                current = parseInt(ch);
+            }
+            catch(e)
+            {
+                reject("Kunde inte hitta sparat spel");
+                return;
+            }
+            resolve([]);
+            f.style.display = "none";
         })
     })
 };
@@ -218,6 +248,9 @@ const updateForm = () => {
     document.querySelectorAll("#current_hole input").forEach((e)=>{
         e.value = 1;
     })
+    localStorage.setItem("course",JSON.stringify(course));
+    localStorage.setItem("players", JSON.stringify(players));
+    localStorage.setItem("currentHole",current);
 }
 const addPlayersToForm = () => {
     players.forEach((pl,idx)=>{
