@@ -1,8 +1,96 @@
-body { margin: 0; }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital@0;1&family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* background-color: #121212;
+    color: white; */
+    font-family: 'Poppins', sans-serif;
+}
+body {
+    margin: 0;
+    max-width: 400px;
+}
 main {
     display: none;
 }
 #form_players {
     display: flex;
     flex-direction: column;
+}
+#current_hole {
+    display: none;
+    border: 1px dotted black;
+}
+#current_hole form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+#error::before {
+    content: 'Fel: ';
+}
+#error {
+    display: none;
+}
+
+#hole_par::before {
+    content: 'Par för hålet: ';
+}
+.buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8vh;
+}
+#score_board {
+    display: none;
+    min-width: max-content;
+    overflow-x:auto;
+}
+#score_board tr {
+    width: 100%;
+    display: flex;
+}
+th, td {
+    border: 1px solid grey;
+    flex: 1;
+    width: fit-content;
+    padding: 0.25rem;
+}
+.table_header {
+    background-color: lightgray;
+}
+td {
+    font-family: 'Roboto Mono', monospace;
+    font-style: bold;
+}
+input {
+    font-size: 2rem;
+    font-family: 'Roboto Mono', monospace;
+    width: auto;
+}
+button, input[type="submit"] {
+    outline: none;
+    border: 1px solid black;
+    background-color: transparent;
+    padding: 0;
+    font-size: 2rem;
+    height: 7vh;
+    text-shadow: 0 0 5px black;
+    border-radius: .5rem;
+}
+input[type="number"] {
+    width: 100%;
+}
+#hole_inputs {
+    grid-template-columns: 1fr 1fr;
+}
+.input_row {
+    display: flex;
+}
+#hole_form label {
+    font-size: 1.5rem;
 }

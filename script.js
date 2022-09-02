@@ -49,18 +49,29 @@ function animate() {
 
 animate(); */
 
+let course = {};
+let players = [];
+let current = 0;
+
+let holeForm = document.getElementById("hole_form");
+let previousButton = document.getElementById("previous");
+let nextButton = document.getElementById("next");
+let currentHole = document.getElementById("current_hole");
+let holeInputs = document.getElementById("hole_inputs");
+let holeInfo = document.getElementById("hole_info");
+let holePar = document.getElementById("hole_par");
+let holeNumber = document.getElementById("hole_number");
+let scoreHeader = document.getElementById("score_header");
+
 (async ()=>{
-    let holes = {};
     if(!(await fetch("https://fpgscore.fredricpersson2.repl.co/info.json").then(async(res)=>{
         if(!res.ok){
             throw "Not ok!!";
         }
-        holes = await res.json();
+        course = await res.json();
         return true;
     }).catch((e)=>{
-        console.error(e)
-        err = document.getElementById("error");
-        err.appendChild(document.createTextNode("Vi kunde inte hämta hålen"));
+        error(e)
         return false
     }).finally(()=>{
         document.getElementById("loading").style.display = "none";
@@ -70,18 +81,31 @@ animate(); */
     }
     //main
     confetti();
+    console.log(course)
     document.getElementsByTagName("main")[0].style.display = "inherit";
-    console.log(await showPlayerForm());
+    document.getElementById("course_title").innerText = course.name;
+    if(!(await showPlayerForm().then((d) => {
+        players = d.map((p)=>{
+            return {
+                name: p,
+                holes: Array.from({length: course.court.length}, ()=>0)
+            }
+        })
+        return true
+    }).catch((e)=>{
+        error(e)
+        return false
+    })))
+    {
+        return;
+    }
+    holeForm.style.display = "inherit";
+    addPlayersToForm();
+    updateForm();
+    addFormEventListeners();
+
 })();
 
-
-const createCard = () => {
-    let c = document.createElement("div");/*  */
-    c.className = "card"
-    let f = document.createElement("form")
-    c.appendChild(f)
-    document.getElementsByTagName("main")[0].appendChild(c)
-};
 const showPlayerForm = () => {
     return new Promise((resolve, reject) => {
         let f = document.getElementById("player_form");
@@ -97,9 +121,15 @@ const showPlayerForm = () => {
                 return (new RegExp(/player\_[0-9]/)).test(el[0]) && el[1].length > 0
             })
             entries = entries.map((el)=>{
-                return el[1]
+                return el[1].trim()
             })
+            if(entries.length < 1)
+            {
+                reject("Minst en spelare måste vara med")
+            }
             resolve(entries)
+            f.style.display = "none";
+            
 
         })
         f.addEventListener("input", (e)=>{
@@ -112,9 +142,7 @@ const showPlayerForm = () => {
                 return;
             }
             if(e.target.value < 1 || e.target.value > 8) return;
-            console.log(e)
             ps = document.getElementById("form_players");
-            console.log(ps)
             ps.innerHTML = ""
             for (let i = 0; i < parseInt(e.target.value); i++)
             {
@@ -126,3 +154,193 @@ const showPlayerForm = () => {
         })
     })
 };
+
+const showHole = (data,players) => {
+    console.log("showHole called")
+    return new Promise((resolve,reject) => {
+        
+        
+    })
+}
+const error = (e) => {
+    console.error(e)
+    err = document.getElementById("error");
+    err.style.display = "inherit"
+    err.appendChild(document.createTextNode(e));
+}
+const addFormEventListeners = () => {
+    holeForm.addEventListener("formdata", (e)=>{
+        console.log("formdata event")
+        console.log(e)
+        let fd = e.formData
+        let entries = [...fd.entries()];
+        entries.forEach((le) => {
+            le[0] = le[0].split("score_player")[1]
+            players[parseInt(le[0])].holes[parseInt(data.id)-1] = parseInt(le[1])
+        })
+        current++;
+        updateForm();
+        updateScoreHeader();
+    });
+    holeForm.addEventListener("input", (e)=>{
+        console.log("input event")
+        if(!e.target.name.includes("score_player")) return;
+        e.target.value = e.target.value.replace(/[^0-9.]/g, '')
+        if(parseInt(e.target.value) < 1)
+        {
+            e.target.value = 1
+        }
+    });
+    function previousButtonClick(){
+        current--;
+        updateForm();
+        updateScoreHeader();
+    }
+    previousButton.addEventListener("click", previousButtonClick)
+    nextButton.addEventListener("click", ()=>{
+        new FormData(holeForm)
+    })
+}
+
+const updateForm = () => {
+    if(current == course.court.length)
+    {
+        currentHole.style.display = "none";
+        showScoreBoard();
+        return;
+    }
+    data = course.court[current];
+    console.log(data);
+    currentHole.style.display = "inherit";
+    holeInfo.innerText = data.info;
+    holePar.innerText = data.par;
+    holeNumber.innerText = data.id;
+    document.querySelectorAll("#current_hole input").forEach((e)=>{
+        e.value = 1;
+    })
+}
+const addPlayersToForm = () => {
+    players.forEach((pl,idx)=>{
+        let playerLabel = document.createElement("label");
+        let playerInput = document.createElement("input");
+        let playerInputDec = document.createElement("button");
+        let playerInputInc = document.createElement("button");
+        let inputRow = document.createElement("div");
+        inputRow.className = "input_row"
+        playerInputDec.type = "button";
+        playerInputInc.type = "button";
+        playerInputInc.addEventListener("click",()=>{
+            playerInput.value = parseInt(playerInput.value)+1
+        })
+        playerInputDec.addEventListener("click",()=>{
+            playerInput.value = parseInt(playerInput.value)-1
+        })
+        playerInputDec.innerText = "➖"
+        playerInputInc.innerText = "➕"
+        playerInput.setAttribute("type", "number");
+        playerInput.setAttribute("name", `score_player${idx}`);
+        playerInput.id = `score_player${idx}`;
+        playerInput.value = 1
+        playerLabel.setAttribute("for", `score_player${idx}`);
+        playerLabel.innerText = `${pl.name}:`
+        holeInputs.appendChild(playerLabel);
+        inputRow.appendChild(playerInputDec)
+        inputRow.appendChild(playerInput);
+        inputRow.appendChild(playerInputInc);
+        holeInputs.appendChild(inputRow);
+    });
+}
+/* 6 - super lång par
+5 - lång par
+4 - medel par
+3 - kort par
+ 
+1 - hole in one
+birdie = par - 1
+eagle = par - 2
+albatros = par - 3
+boogie = par + 1
+double boogie = par + 2
+triple boogie = par +3 
+sopa = > par + 3 */
+const getParText = (strokes, par) => {
+    if (strokes == 1) return "hole in one";
+    switch(strokes-par)
+    {
+        case 0:
+            return "par";
+        case -1:
+            return "birdie";
+        case -2:
+            return "eagle";
+        case -3:
+            return "albatros";
+        case 1:
+            return "boogie";
+        case 2:
+            return "dubble boogie";
+        case 3:
+            return "trippel boogie";
+    }
+    return "";
+}
+const updateScoreHeader = () => {
+    scoreHeader.innerText = "";
+    let courtScore = 0;
+    course.court.slice(0,current).forEach((hole)=>{
+        courtScore +=hole.par;
+    })
+    console.log('Course score so far:',courtScore)
+    players.forEach((player) => {
+        let playerScore = 0;
+        player.holes.forEach((hole)=>{
+            playerScore+=hole;
+        })
+        let parText = getParText(playerScore,courtScore);
+        let div = document.createElement("div");
+        div.innerText = `${player.name}: ${parText}`;
+        scoreHeader.appendChild(div);
+    })
+}
+const showScoreBoard = () => {
+    let scoreBoard = document.getElementById("score_board");
+    let totalPar = 0;
+    scoreBoard.style.display = "inherit"
+    let tr = document.createElement("tr")
+    let a = document.createElement("th");
+    a.innerText = "Hål";
+    tr.appendChild(a);
+    players.forEach((player)=> {
+        let p = document.createElement("th");
+        p.innerText = player.name;
+        tr.appendChild(p);
+    })
+    scoreBoard.appendChild(tr);
+    course.court.forEach((hole,index)=>{
+        let row = document.createElement("tr");
+        let id = document.createElement("td");
+        id.innerText = hole.id;
+        id.className = "table_header"
+        totalPar += hole.par;
+        row.appendChild(id)
+        players.forEach((player)=>{
+            let p = document.createElement("td");
+            p.innerText = player.holes[index]
+            row.appendChild(p)
+        })
+        scoreBoard.appendChild(row)
+    })
+    let sumRow = document.createElement("tr");
+    let totalParElement = document.createElement("td");
+    totalParElement.innerText = 'Par: ' +totalPar;
+    sumRow.appendChild(totalParElement);
+
+    players.forEach((player)=> {
+        let p = document.createElement("th");
+        let total = player.holes.reduce((a,b)=>a+b)
+        p.innerText = total;
+        sumRow.appendChild(p);
+    })
+    scoreBoard.appendChild(sumRow)
+
+}
