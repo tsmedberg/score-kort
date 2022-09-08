@@ -266,6 +266,7 @@ const addPlayersToForm = () => {
             playerInput.value = parseInt(playerInput.value)+1
         })
         playerInputDec.addEventListener("click",()=>{
+            if(parseInt(playerInput.value) <= 0) return;
             playerInput.value = parseInt(playerInput.value)-1
         })
         playerInputDec.innerText = "➖"
@@ -274,7 +275,6 @@ const addPlayersToForm = () => {
         playerInput.setAttribute("name", `score_player${idx}`);
         playerInput.id = `score_player${idx}`;
         playerInput.value = 1;
-        playerInput.min = 1;
         playerLabel.setAttribute("for", `score_player${idx}`);
         playerLabel.innerText = `${pl.name}:`
         holeInputs.appendChild(playerLabel);
