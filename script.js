@@ -266,7 +266,7 @@ const addPlayersToForm = () => {
             playerInput.value = parseInt(playerInput.value)+1
         })
         playerInputDec.addEventListener("click",()=>{
-            if(parseInt(playerInput.value) <= 0) return;
+            if(parseInt(playerInput.value) <= 1) return;
             playerInput.value = parseInt(playerInput.value)-1
         })
         playerInputDec.innerText = "➖"
