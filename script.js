@@ -273,7 +273,8 @@ const addPlayersToForm = () => {
         playerInput.setAttribute("type", "number");
         playerInput.setAttribute("name", `score_player${idx}`);
         playerInput.id = `score_player${idx}`;
-        playerInput.value = 1
+        playerInput.value = 1;
+        playerInput.min = 1;
         playerLabel.setAttribute("for", `score_player${idx}`);
         playerLabel.innerText = `${pl.name}:`
         holeInputs.appendChild(playerLabel);
@@ -309,11 +310,11 @@ const getParText = (strokes, par) => {
         case -3:
             return "albatros";
         case 1:
-            return "boogie";
+            return "bogey";
         case 2:
-            return "dubble boogie";
+            return "dubble bogey";
         case 3:
-            return "trippel boogie";
+            return "trippel bogey";
     }
     return "";
 }
