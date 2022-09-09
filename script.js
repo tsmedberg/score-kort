@@ -89,7 +89,7 @@ let scoreHeader = document.getElementById("score_header");
         players = d.map((p)=>{
             return {
                 name: p,
-                holes: Array.from({length: course.court.length}, ()=>0)
+                holes: Array.from({length: course.court.length}, ()=>null)
             }
         })
         return true;
@@ -208,9 +208,11 @@ const addFormEventListeners = () => {
             le[0] = le[0].split("score_player")[1]
             players[parseInt(le[0])].holes[parseInt(data.id)-1] = parseInt(le[1])
         })
-        current++;
-        updateForm();
-        updateScoreHeader();
+        //save game
+        localStorage.setItem("course",JSON.stringify(course));
+        localStorage.setItem("players", JSON.stringify(players));
+        localStorage.setItem("currentHole",current);
+        
     });
     holeForm.addEventListener("input", (e)=>{
         console.log("input event")
@@ -220,22 +222,25 @@ const addFormEventListeners = () => {
         {
             e.target.value = 1
         }
+        new FormData(holeForm) //auto submit on change
     });
     function previousButtonClick(){
-        current--;
+        if (current >= 1)current--;
+        updateForm();
+        updateScoreHeader();
+    }
+    function nextButtonClick(){
+        current++;
         updateForm();
         updateScoreHeader();
     }
     previousButton.addEventListener("click", previousButtonClick)
-    nextButton.addEventListener("click", ()=>{
-        new FormData(holeForm)
-    })
+    nextButton.addEventListener("click", nextButtonClick)
 }
 
 const updateForm = () => {
     if(current == course.court.length)
     {
-        currentHole.style.display = "none";
         showScoreBoard();
         return;
     }
@@ -246,11 +251,9 @@ const updateForm = () => {
     holePar.innerText = data.par;
     holeNumber.innerText = data.id;
     document.querySelectorAll("#current_hole input").forEach((e)=>{
-        e.value = 1;
+        let existingScore = players[parseInt(e.getAttribute("data-player_id"))].holes[current]
+        e.value = existingScore > 0 ? existingScore : 1;
     })
-    localStorage.setItem("course",JSON.stringify(course));
-    localStorage.setItem("players", JSON.stringify(players));
-    localStorage.setItem("currentHole",current);
 }
 const addPlayersToForm = () => {
     players.forEach((pl,idx)=>{
@@ -264,14 +267,17 @@ const addPlayersToForm = () => {
         playerInputInc.type = "button";
         playerInputInc.addEventListener("click",()=>{
             playerInput.value = parseInt(playerInput.value)+1
+            playerInput.dispatchEvent(new Event('input', { bubbles: true }));
         })
         playerInputDec.addEventListener("click",()=>{
             if(parseInt(playerInput.value) <= 1) return;
             playerInput.value = parseInt(playerInput.value)-1
+            playerInput.dispatchEvent(new Event('input', { bubbles: true }));
         })
         playerInputDec.innerText = "➖"
         playerInputInc.innerText = "➕"
         playerInput.setAttribute("type", "number");
+        playerInput.setAttribute("data-player_id",idx)
         playerInput.setAttribute("name", `score_player${idx}`);
         playerInput.id = `score_player${idx}`;
         playerInput.value = 1;
@@ -337,6 +343,7 @@ const updateScoreHeader = () => {
     })
 }
 const showScoreBoard = () => {
+    currentHole.style.display = "none";
     let scoreBoard = document.getElementById("score_board");
     let totalPar = 0;
     scoreBoard.style.display = "inherit"
@@ -359,7 +366,7 @@ const showScoreBoard = () => {
         row.appendChild(id)
         players.forEach((player)=>{
             let p = document.createElement("td");
-            p.innerText = player.holes[index]
+            p.innerText = player.holes[index] || '-'
             row.appendChild(p)
         })
         scoreBoard.appendChild(row)

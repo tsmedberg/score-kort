@@ -17,7 +17,8 @@
     <main>
         <h1 id="course_title">Välkommen till switchen</h1>
     </main>
-    <div id="score_header"></div>
+    <div id="score_header">
+    </div>
     <form action="" id="player_form">
         <label for="player_count">Antal spelare:</label>
         <input type="number" name="player_count" id="player_count" placeholder="Antal Spelare" pattern="[0-9]+">
@@ -26,6 +27,7 @@
         <input type="submit" value="✅">
     </form>
     <div id="current_hole">
+        <button type="button" onclick="if (confirm('Är du säker på att du vill avsluta spelet?')) showScoreBoard()">Avsluta spelet</button>
         <p id="hole_number"></p>
         <p id="hole_info"></p>
         <p id="hole_par"></p>
