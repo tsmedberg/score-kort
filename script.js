@@ -51,7 +51,7 @@ animate(); */
 
 let course = {};
 let players = [];
-let current = 0;
+let indexes = {current: 0, played: []};
 
 let holeForm = document.getElementById("hole_form");
 let previousButton = document.getElementById("previous");
@@ -172,7 +172,7 @@ const showPlayerForm = () => {
                 {
                     throw "balls"
                 }
-                current = parseInt(ch);
+                indexes = JSON.parse(ch);
             }
             catch(e)
             {
@@ -208,10 +208,11 @@ const addFormEventListeners = () => {
             le[0] = le[0].split("score_player")[1]
             players[parseInt(le[0])].holes[parseInt(data.id)-1] = parseInt(le[1])
         })
+        indexes.played.push(indexes.current)
         //save game
         localStorage.setItem("course",JSON.stringify(course));
         localStorage.setItem("players", JSON.stringify(players));
-        localStorage.setItem("currentHole",current);
+        localStorage.setItem("currentHole",JSON.stringify(indexes));
         
     });
     holeForm.addEventListener("input", (e)=>{
@@ -225,12 +226,12 @@ const addFormEventListeners = () => {
         new FormData(holeForm) //auto submit on change
     });
     function previousButtonClick(){
-        if (current >= 1)current--;
+        if (indexes.current >= 1)indexes.current--;
         updateForm();
         updateScoreHeader();
     }
     function nextButtonClick(){
-        current++;
+        indexes.current++;
         updateForm();
         updateScoreHeader();
     }
@@ -239,20 +240,20 @@ const addFormEventListeners = () => {
 }
 
 const updateForm = () => {
-    if(current == course.court.length)
+    if(indexes.current == course.court.length)
     {
         showScoreBoard();
         return;
     }
-    data = course.court[current];
+    data = course.court[indexes.current];
     console.log(data);
     currentHole.style.display = "inherit";
     holeInfo.innerText = data.info;
     holePar.innerText = data.par;
     holeNumber.innerText = data.id;
     document.querySelectorAll("#current_hole input").forEach((e)=>{
-        let existingScore = players[parseInt(e.getAttribute("data-player_id"))].holes[current]
-        e.value = existingScore > 0 ? existingScore : 1;
+        let existingScore = players[parseInt(e.getAttribute("data-player_id"))].holes[indexes.current]
+        e.value = existingScore > 0 ? existingScore : 0;
     })
 }
 const addPlayersToForm = () => {
@@ -290,19 +291,6 @@ const addPlayersToForm = () => {
         holeInputs.appendChild(inputRow);
     });
 }
-/* 6 - super lång par
-5 - lång par
-4 - medel par
-3 - kort par
- 
-1 - hole in one
-birdie = par - 1
-eagle = par - 2
-albatros = par - 3
-boogie = par + 1
-double boogie = par + 2
-triple boogie = par +3 
-sopa = > par + 3 */
 const getParText = (strokes, par) => {
     if (strokes == 1) return "hole in one";
     switch(strokes-par)
@@ -326,17 +314,16 @@ const getParText = (strokes, par) => {
 }
 const updateScoreHeader = () => {
     scoreHeader.innerText = "";
-    let courtScore = 0;
-    course.court.slice(0,current).forEach((hole)=>{
-        courtScore +=hole.par;
+    let courtPar = 0;
+    course.court.slice(0,indexes.current).forEach((hole)=>{
+        courtPar +=hole.par;
     })
-    console.log('Course score so far:',courtScore)
     players.forEach((player) => {
         let playerScore = 0;
         player.holes.forEach((hole)=>{
             playerScore+=hole;
         })
-        let parText = getParText(playerScore,courtScore);
+        let parText = getParText(playerScore,courtPar);
         let div = document.createElement("div");
         div.innerText = `${player.name}: ${parText}`;
         scoreHeader.appendChild(div);
@@ -349,6 +336,8 @@ const showScoreBoard = () => {
     scoreBoard.style.display = "inherit"
     let tr = document.createElement("tr")
     let a = document.createElement("th");
+    let from = Math.min(...indexes.played);
+    let to = Math.max(...indexes.played);
     a.innerText = "Hål";
     tr.appendChild(a);
     players.forEach((player)=> {
@@ -357,7 +346,7 @@ const showScoreBoard = () => {
         tr.appendChild(p);
     })
     scoreBoard.appendChild(tr);
-    course.court.forEach((hole,index)=>{
+    course.court.slice(from,to+1).forEach((hole,index)=>{
         let row = document.createElement("tr");
         let id = document.createElement("td");
         id.innerText = hole.id;
@@ -366,7 +355,7 @@ const showScoreBoard = () => {
         row.appendChild(id)
         players.forEach((player)=>{
             let p = document.createElement("td");
-            p.innerText = player.holes[index] || '-'
+            p.innerText = player.holes[from+index] || '-'
             row.appendChild(p)
         })
         scoreBoard.appendChild(row)
@@ -383,5 +372,4 @@ const showScoreBoard = () => {
         sumRow.appendChild(p);
     })
     scoreBoard.appendChild(sumRow)
-
 }

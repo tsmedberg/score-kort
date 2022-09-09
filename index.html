@@ -23,8 +23,9 @@
         <label for="player_count">Antal spelare:</label>
         <input type="number" name="player_count" id="player_count" placeholder="Antal Spelare" pattern="[0-9]+">
         <div id="form_players"></div>
-        <button type="button" id="load_previous">Hämta föregående spel</button>
         <input type="submit" value="✅">
+        eller
+        <button type="button" id="load_previous">Hämta föregående spel</button>
     </form>
     <div id="current_hole">
         <button type="button" onclick="if (confirm('Är du säker på att du vill avsluta spelet?')) showScoreBoard()">Avsluta spelet</button>
@@ -35,8 +36,8 @@
             <div id="hole_inputs"></div>
         </form>
         <div class="buttons">
-            <button id="previous">⬅️</button>
-            <button id="next">➡️</button>
+            <button id="previous" aria-label="Föregående">⬅️</button>
+            <button id="next" aria-label="Nästa">➡️</button>
         </div>
     </div>
     <table id="score_board"></table>
