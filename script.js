@@ -228,12 +228,12 @@ const addFormEventListeners = () => {
     function previousButtonClick(){
         if (indexes.current >= 1)indexes.current--;
         updateForm();
-        updateScoreHeader();
+        //updateScoreHeader();
     }
     function nextButtonClick(){
         indexes.current++;
         updateForm();
-        updateScoreHeader();
+        //updateScoreHeader();
     }
     previousButton.addEventListener("click", previousButtonClick)
     nextButton.addEventListener("click", nextButtonClick)
@@ -338,8 +338,11 @@ const showScoreBoard = () => {
     let a = document.createElement("th");
     let from = Math.min(...indexes.played);
     let to = Math.max(...indexes.played);
+    let b = document.createElement("th");
+    b.innerText = "Par";
     a.innerText = "Hål";
     tr.appendChild(a);
+    tr.appendChild(b);
     players.forEach((player)=> {
         let p = document.createElement("th");
         p.innerText = player.name;
@@ -349,10 +352,14 @@ const showScoreBoard = () => {
     course.court.slice(from,to+1).forEach((hole,index)=>{
         let row = document.createElement("tr");
         let id = document.createElement("td");
+        let hp = document.createElement("td");
+        hp.innerText = hole.par;
+        hp.style.fontWeight = "bold"
         id.innerText = hole.id;
         id.className = "table_header"
         totalPar += hole.par;
-        row.appendChild(id)
+        row.appendChild(id);
+        row.appendChild(hp);
         players.forEach((player)=>{
             let p = document.createElement("td");
             p.innerText = player.holes[from+index] || '-'
@@ -361,15 +368,32 @@ const showScoreBoard = () => {
         scoreBoard.appendChild(row)
     })
     let sumRow = document.createElement("tr");
+    let parRow = document.createElement("tr");
+
     let totalParElement = document.createElement("td");
-    totalParElement.innerText = 'Par: ' +totalPar;
-    sumRow.appendChild(totalParElement);
+    totalParElement.innerText = totalPar;
+    totalParElement.style.fontWeight = "bold";
+    let placeholder = document.createElement("td");
+    placeholder.innerText='-';
+    let parHeader = document.createElement("td");
+    parHeader.innerText = "Par";
+    let sumHeader = document.createElement("td");
+    sumHeader.innerText = "Summa";
+    parRow.appendChild(parHeader);
+    parRow.appendChild(totalParElement);
+    sumRow.appendChild(sumHeader);
+    sumRow.appendChild(placeholder);
+    
 
     players.forEach((player)=> {
-        let p = document.createElement("th");
+        let pl = document.createElement("td");
+        let par = document.createElement("td");
         let total = player.holes.reduce((a,b)=>a+b)
-        p.innerText = total;
-        sumRow.appendChild(p);
+        par.innerText = total-totalPar;
+        pl.innerText = total;
+        sumRow.appendChild(pl);
+        parRow.appendChild(par);
     })
-    scoreBoard.appendChild(sumRow)
+    scoreBoard.appendChild(parRow);
+    scoreBoard.appendChild(sumRow);
 }
